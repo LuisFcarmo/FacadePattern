@@ -44,18 +44,3 @@ class HttpClient:
             print(f"ERRO: Falha inesperada com Playwright. Detalhes: {e}")
             return None
     
-    def get_page_plawright(self, url):
-        print(f"INFO: Usando modo navegador (Playwright) para {url}")
-        try:
-            with Stealth().use_sync(sync_playwright()) as p:
-                browser = p.chromium.launch(headless=True)
-                page = browser.new_page()
-                page.goto(url, timeout=60000, wait_until='domcontentloaded')
-                return
-            
-        except PlaywrightTimeoutError:
-            print(f"ERRO: Timeout ao carregar com Playwright.")
-            return None
-        except Exception as e:
-            print(f"ERRO: Falha inesperada com Playwright. Detalhes: {e}")
-            return None
