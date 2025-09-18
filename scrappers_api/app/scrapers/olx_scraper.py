@@ -7,6 +7,7 @@ from app.scrapers.builders import OLXURLBuilder
 from app.services.PlaywrightService import PlawrightService, Routines
 from app.services.HttpClient import HttpClient
 from bs4 import BeautifulSoup
+from concurrent.futures import ThreadPoolExecutor
 
 class OLXScraper(IScraper):
     _SORT_MAP = { "newest": 1 }
@@ -39,12 +40,27 @@ class OLXScraper(IScraper):
 
         target_url = url_builder.build()
         pages_url = self.GetPagesUrls(target_url)
-        for url in pages_url:
-            soup = self.GetSoupFromPageProductsByPage(url)
-            total_products.extend(self.GetProdutos(soup))
-            
+        
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            results = executor.map(self.scrape_single_page, pages_url)
+            for product_list_per_page in results:
+                total_products.extend(product_list_per_page)
+        
+        print("Busca finalizada!")
         return total_products
 
+    def scrape_single_page(self, url:str):
+        try:
+            print(f"Buscando produtos em: {url}")
+            soup = self.GetSoupFromPageProductsByPage(url)
+            products = self.GetProdutos(soup)
+            return products
+        
+        except Exception as e:
+            print(f"Erro ao buscar na URL {url}: {e}")
+            return [] 
+        
+    
     
     def GetSoupFromPageProductsByPage(self, url):
         html_content = self.HttpService.get_html_browser(url=url)

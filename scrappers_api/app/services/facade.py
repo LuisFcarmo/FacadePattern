@@ -25,4 +25,6 @@ class ScrapingFacade:
                 
             except Exception as e:
                 print(f"   ERRO no {scraper_name}: {e}")
+                
+        return all_products
         
