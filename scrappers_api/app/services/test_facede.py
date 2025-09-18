@@ -15,9 +15,9 @@ def executar_busca():
     if resultados_finais:
         print("\n--- Resultados Encontrados ---")
         for produto in resultados_finais:
-            print(f"Nome:  {produto['title_element']}")
-            print(f"Preço: R$ {produto['price_element']}")
-            print(f"Link:  {produto['url']}")
+            print(f"Nome:  {produto['title']}")
+            print(f"Preço: R$ {produto['price']}")
+            print(f"Link:  {produto['link']}")
             print("-" * 20)
     else:
         print("\nNenhum resultado encontrado para esta busca.")
