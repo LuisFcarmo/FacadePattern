@@ -9,6 +9,15 @@ from app.services.HttpClient import HttpClient
 from bs4 import BeautifulSoup
 
 class OLXScraper(IScraper):
+    """
+        A web scraper for extracting product listings from OLX Brazil.
+
+        This scraper is designed to handle OLX's dynamic page loading,
+        including pagination that appears after scrolling. It uses a combination
+        of Playwright for initial page rendering and concurrent requests for
+        scraping individual pages efficiently.
+    """
+
     _SORT_MAP = { "newest": 1 }
         
     def __init__(self):
@@ -25,6 +34,23 @@ class OLXScraper(IScraper):
         sort_by: Literal["relevance", "newest", "price_asc", "price_desc"] = "relevance",
         page: int = 1
     ) -> List[Product]:
+        """
+            Orchestrates the scraping process for a given product search on OLX.
+
+            It builds the initial search URL, finds all pagination links, and then
+            scrapes each page concurrently to gather all product data.
+
+            Args:
+                product_name (str): The name of the product to search for.
+                min_price (Optional[int]): The minimum price filter.
+                max_price (Optional[int]): The maximum price filter.
+                state (str): The Brazilian state code (e.g., "go" for Goiás) to search in.
+                sort_by (Literal): The sorting order for the results.
+                page (int): The starting page number (currently not implemented by OLX in the same way).
+
+            Returns:
+                List[Product]: A list of all `Product` objects found across all pages.
+        """
         target_state = state or "go"
         total_products = []
         url_builder = OLXURLBuilder(state_code=target_state)
@@ -39,7 +65,27 @@ class OLXScraper(IScraper):
 
         target_url = url_builder.build()
         pages_url = self.GetPagesUrls(target_url)
-        for url in pages_url:
+        
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            results = executor.map(self.scrape_single_page, pages_url)
+            for product_list_per_page in results:
+                total_products.extend(product_list_per_page)
+        
+        print("Busca finalizada!")
+        return total_products
+
+    def scrape_single_page(self, url:str):
+        """
+            Scrapes a single OLX results page for product data.
+
+            Args:
+                url (str): The URL of the results page to scrape.
+
+            Returns:
+                List[Product]: A list of products found on the page, or an empty list if an error occurs.
+        """
+        try:
+            print(f"Buscando produtos em: {url}")
             soup = self.GetSoupFromPageProductsByPage(url)
             total_products.extend(self.GetProdutos(soup))
             
@@ -47,10 +93,32 @@ class OLXScraper(IScraper):
 
     
     def GetSoupFromPageProductsByPage(self, url):
+        """
+            Fetches page content using a browser and returns a BeautifulSoup object.
+
+            Args:
+                url (str): The URL to fetch.
+
+            Returns:
+                BeautifulSoup: A parsed object of the page's HTML.
+        """
         html_content = self.HttpService.get_html_browser(url=url)
         return BeautifulSoup(html_content, 'lxml')
    
     def GetPagesUrls(self, url):
+        """
+            Retrieves all pagination URLs from the initial search results page.
+
+            OLX lazy-loads its pagination controls, so this method uses Playwright
+            to simulate infinite scrolling to reveal all available page links before
+            extracting them.
+
+            Args:
+                url (str): The initial search URL.
+
+            Returns:
+                List[str]: A list of all unique URLs for each page of the search results.
+        """
         Pages_Urls = []
         html_content = self.PlawrightService.ExecutePlaywrightRoutineInPage(
             url=url,
@@ -69,6 +137,15 @@ class OLXScraper(IScraper):
         return Pages_Urls
         
     def GetProdutos(self, soup):
+        """
+            Extracts product details from the BeautifulSoup object of a results page.
+
+            Args:
+                soup (BeautifulSoup): The parsed HTML of the page.
+
+            Returns:
+                List[Product]: A list of `Product` objects extracted from the page.
+        """
         products = []
         container_selector = 'div[class*="adListContainer"]' 
         ad_container = soup.select_one(container_selector)

@@ -3,7 +3,7 @@
 set -e
 
 VENV_ACTIVATE="venv/bin/activate"
-
+    
 if [ -f "$VENV_ACTIVATE" ]; then
     echo "Ativando o ambiente virtual..."
     source "$VENV_ACTIVATE"

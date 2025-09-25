@@ -7,6 +7,14 @@ from playwright_stealth import Stealth
 
 
 class HttpClient:
+    """
+        A wrapper for making HTTP requests.
+        
+        This client provides two methods for fetching HTML content:
+        1. `get_html_simple`: A fast method using the `requests` library for static pages.
+        2. `get_html_browser`: A more robust method using Playwright for dynamic,
+        JavaScript-rendered pages.
+    """
     def __init__(self, timeout: int = 15):
         self.session = requests.Session()
         self.timeout = timeout
@@ -17,6 +25,17 @@ class HttpClient:
         })
 
     def get_html_simple(self, url: str) -> str | None:
+        """
+            Fetches HTML content using a simple GET request.
+
+            Args:
+                url (str): The URL to retrieve.
+
+            Returns:
+                Optional[str]: The HTML content as a string if the request is successful,
+                            otherwise None.
+        """
+
         print(f"INFO: Tentando busca simples para {url}")
         try:
             response = self.session.get(url, timeout=self.timeout)
@@ -27,6 +46,18 @@ class HttpClient:
             return None
 
     def get_html_browser(self, url: str) -> str | None:     
+        """
+            Fetches HTML content by rendering the page in a headless browser (Playwright).
+            
+            This method is suitable for websites that load content dynamically with JavaScript.
+
+            Args:
+                url (str): The URL to retrieve.
+
+            Returns:
+                Optional[str]: The rendered HTML content as a string if successful,
+                            otherwise None.
+        """
         print(f"INFO: Usando modo navegador (Playwright) para {url}")
         try:
             with Stealth().use_sync(sync_playwright()) as p:
