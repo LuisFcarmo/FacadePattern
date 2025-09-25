@@ -68,8 +68,8 @@ for produto in resultados:
 ```
 /
 ├── app/
-│   ├── facades/
-│   │   └── scraping_facade.py   # A fachada que simplifica a interface
+│   ├── api/
+│   │   └── main.py              # api do fastapi 
 │   ├── models/
 │   │   └── product.py           # O modelo de dados do produto
 │   ├── scrapers/
@@ -77,6 +77,7 @@ for produto in resultados:
 │   │   ├── interfaces/          # Contratos para os scrapers
 │   │   └── olx_scraper.py       # Implementação do scraper da OLX
 │   └── services/
+│       ├── facade.py            # Facade que controla as chamdas
 │       ├── HttpClient.py        # Cliente para requisições HTTP
 │       └── PlaywrightService.py # Serviço para automação com Playwright
 ├── .env                         # Arquivo de configuração (local)
