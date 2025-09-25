@@ -7,6 +7,7 @@ from app.scrapers.builders import OLXURLBuilder
 from app.services.PlaywrightService import PlawrightService, Routines
 from app.services.HttpClient import HttpClient
 from bs4 import BeautifulSoup
+from concurrent.futures import ThreadPoolExecutor
 
 class OLXScraper(IScraper):
     """
@@ -87,10 +88,14 @@ class OLXScraper(IScraper):
         try:
             print(f"Buscando produtos em: {url}")
             soup = self.GetSoupFromPageProductsByPage(url)
-            total_products.extend(self.GetProdutos(soup))
-            
-        return total_products
-
+            products = self.GetProdutos(soup)
+            return products
+        
+        except Exception as e:
+            print(f"Erro ao buscar na URL {url}: {e}")
+            return [] 
+        
+    
     
     def GetSoupFromPageProductsByPage(self, url):
         """
