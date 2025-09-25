@@ -27,7 +27,7 @@ O núcleo do design é o **padrão de projeto Façade**, que simplifica a intera
 
 ## 🏗 Arquitetura: O Padrão Façade
 
-O padrão **Façade (Fachada)** fornece uma interface unificada e simplificada para um conjunto de interfaces em um subsistema.  
+O padrão **Façade (Fachada)** fornece uma interface unificada e simplificada para um conjunto de interfaces em um subsistema, foi utilizado no projeto justamente por suas vantagens e desvantagens.  
 
 👉 Em vez de o cliente interagir diretamente com vários scrapers complexos (`OLXScraper`, `MercadoLivreScraper`, etc.), ele se comunica apenas com a `ScrapingFacade`.  
 
